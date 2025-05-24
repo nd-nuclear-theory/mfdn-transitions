@@ -1,0 +1,38 @@
+&transition_data
+!
+!     sample namelist input for MFDn_Transitions
+!
+!	        UNDER CONSTRUCTION
+!
+! NOTE: strings (i.e. filenames) have to be put
+!       in 'single' or "double" quotes
+!
+TwoJ_bra = 4
+n_bra = 1
+!
+infofilename_bra='Z1N1_Nm04_2Mj4/mfdn_smwf.info'
+basisfilename_bra='Z1N1_Nm04_2Mj4/mfdn_MBgroups'
+smwffilename_bra='Z1N1_Nm04_2Mj4/mfdn_smwf'
+!
+TwoJ_ket = 4
+n_ket = 3
+!
+infofilename_ket='Z1N1_Nm04_2Mj2/mfdn_smwf.info'
+basisfilename_ket='Z1N1_Nm04_2Mj2/mfdn_MBgroups'
+smwffilename_ket='Z1N1_Nm04_2Mj2/mfdn_smwf'
+!
+hbomeg = 20.0
+!
+obdme = .false.
+max2K = 4
+!
+numTBtrans = 1
+!
+TBMEoperators(1) = 'quadrupole_Nmax04_total_h2v15099'
+!
+!TBMEoperators(1) = 'TBME_H2full'
+!TBMEoperators(2) = 'TBME_HCM'
+!TBMEoperators(3) = 'TBME_V2'
+!TBMEoperators(4) = 'TBME_T2'
+!
+/

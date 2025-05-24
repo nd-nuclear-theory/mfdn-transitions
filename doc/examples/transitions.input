@@ -1,0 +1,17 @@
+&transition_data
+basisfilename_bra = 'Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_MBgroups',
+smwffilename_bra = 'Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf',
+infofilename_bra = 'Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf.info',
+TwoJ_bra = 2,
+n_bra = 1,
+basisfilename_ket = 'Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_MBgroups',
+smwffilename_ket = 'Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf',
+infofilename_ket = 'Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf.info',
+TwoJ_ket(1) = 2,
+n_ket(1) = 1,
+obdme = .true.,
+max2K = 4,
+hbomeg = 15,
+numTBtrans = 1,
+TBMEoperators(1) = 'tbme-Tintr',
+/
