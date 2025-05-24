@@ -207,6 +207,7 @@ set(mfdn-transitions_SOURCES
     src/subrts_EvalOBDME.f90
     src/subrts_inputTBME.f90
     src/subrts_EvalTBTrans.f90
+    src/subrts_ApplyTBTrans.f90
 )
 
 # define mfdn-transitions object library and add source files
@@ -236,6 +237,7 @@ endif()
 # define main executable
 # ##############################################################################
 
+# xtransitions
 add_executable(xtransitions src/MFDn_Transitions.f90)
 target_link_libraries(xtransitions PRIVATE compile-options)
 target_link_libraries(
@@ -243,6 +245,8 @@ target_link_libraries(
                        OpenMP::OpenMP_Fortran
 )
 target_compile_definitions(xtransitions PRIVATE VCS_REVISION="${PACKAGE_GIT_VERSION}")
+
+# xtransitions-DeltaTz
 if(TRANSITIONS_TZ_CHANGING)
   add_executable(xtransitions-DeltaTz src/MFDn_Transitions.f90)
   target_compile_definitions(xtransitions-DeltaTz PRIVATE DeltaTz)
@@ -255,6 +259,26 @@ if(TRANSITIONS_TZ_CHANGING)
   target_compile_definitions(xtransitions-DeltaTz PRIVATE VCS_REVISION="${PACKAGE_GIT_VERSION}")
 endif()
 
+# xapply
+add_executable(xapply src/MFDn_apply_operator.f90)
+target_link_libraries(xapply PRIVATE compile-options)
+target_link_libraries(
+  xapply PRIVATE mfdn-transitions::mfdn-transitions MPI::MPI_Fortran
+                       OpenMP::OpenMP_Fortran
+)
+target_compile_definitions(xapply PRIVATE VCS_REVISION="${PACKAGE_GIT_VERSION}")
+
+# xapply-DeltaTz
+add_executable(xapply-DeltaTz src/MFDn_apply_operator.f90)
+target_compile_definitions(xapply-DeltaTz PRIVATE DeltaTz)
+target_link_libraries(xapply-DeltaTz PRIVATE compile-options)
+target_link_libraries(
+  xapply-DeltaTz PRIVATE mfdn-transitions::mfdn-transitions-DeltaTz
+                       MPI::MPI_Fortran
+                       OpenMP::OpenMP_Fortran
+)
+target_compile_definitions(xapply-DeltaTz PRIVATE VCS_REVISION="${PACKAGE_GIT_VERSION}")
+
 # ##############################################################################
 # define installation rules
 #
@@ -262,10 +286,13 @@ endif()
 # is an executable; if mfdn-transitions ever exports a library, this should be
 # uncommented and used
 # ##############################################################################
+
 install(TARGETS xtransitions)
 if(TRANSITIONS_TZ_CHANGING)
   install(TARGETS xtransitions-DeltaTz)
 endif()
+install(TARGETS xapply xapply-DeltaTz)
+
 ## install(TARGETS xtransitions EXPORT mfdn-transitionsTargets)
 ##
 ## install(

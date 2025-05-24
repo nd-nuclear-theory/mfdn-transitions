@@ -1,0 +1,16 @@
+&transition_data
+infofilename_ket = 'runsource/results/wf/task0/mfdn_smwf.info',
+basisfilename_ket = 'runsource/results/wf/task0/mfdn_MBgroups',
+smwffilename_ket = 'runsource/results/wf/task0/mfdn_smwf',
+
+TwoJ_ket(1) = 2,
+n_ket(1) = 1,
+TBMEoperators(1) = 'runsource/task-0000.dir/work1/tbme-J2',
+TwoJ_out(1) = 2,
+n_out(1) = 1,
+normalize = .false.,
+
+infofilename_bra = 'runsource/task-0000.dir/work1/mfdn_smwf.info',
+basisfilename_bra = 'runsource/task-0000.dir/work1/mfdn_MBgroups',
+smwffilename_bra = 'runsource/task-0000.dir/work1/mfdn_smwf',
+/

@@ -1,0 +1,9 @@
+set-target-indexing orbitals.dat 5 5 6 6 6
+set-target-multipolarity 0 0 0
+set-output-format 15099
+set-mass 6
+
+define-tb-source builtin identity
+
+define-target tbme-identity.dat
+  add-source identity 1.0

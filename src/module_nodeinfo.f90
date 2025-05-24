@@ -1,7 +1,7 @@
 
 module nodeinfo
   use MPI
-  use omp_lib 
+  use omp_lib
   implicit none
   ! MPI variables
   integer :: icomm, myrank, nprocs, root, ierr
@@ -25,11 +25,15 @@ contains
     call MPI_Comm_Rank(icomm, myrank, ierr)
     !
     ! Set/check number of threads
+#ifdef _OPENMP
     numthreads = omp_get_max_threads()
+#else
+    numthreads = 1
+#endif
     !$omp end single
     return
   end subroutine Setup_Parallel
-  
+
   subroutine SplitProcsSeq(ncolprocs, nrowprocs, colstart, rowstart, nblocks)
     integer, intent(in) :: ncolprocs, nrowprocs
     integer, intent(out) :: colstart, rowstart, nblocks
@@ -40,7 +44,7 @@ contains
     !
     ! Sequentially assign submatrices to ranks.  Each rank will have
     ! a start position and wrap around to the beginning of the next row
-    ! when it reaches the end of the row.  
+    ! when it reaches the end of the row.
     !
     ! Best performance anticipated for
     !   nprocs =< colprocs  with  ncolprocs / nprocs  integer

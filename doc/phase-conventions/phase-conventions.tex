@@ -1,0 +1,111 @@
+%     AMS-LaTeX v.2 template for use with amsart
+%
+%     Remove any commented or uncommented macros you do not use.
+
+\documentclass[%
+  aps,%
+  prc,%
+  showpacs,%
+  superscriptaddress,%
+  onecolumn,%
+  notitlepage,%
+  12pt,%
+  floatfix,%
+  % endfloats,%
+  amsmath,%
+  amssymb,%
+  %preprintnumbers,%
+  %linenumbers,%
+]{revtex4-1}
+
+\usepackage{amscd}
+\usepackage{physics}
+
+\newcommand{\clebsch}[6]{(#1 #2 #3 #4 \vert #5 #6)}
+\newcommand{\threej}[6]{
+  \renewcommand\arraystretch{0.6667}\begin{pmatrix} #1&#3&#5\\#2&#4&#6 \end{pmatrix}\renewcommand\arraystretch{1}
+}
+% \newcommand{\threej}{\begin{pmatrix} j'&L&j\\-m'&M&m \end{pmatrix}}
+\newcommand{\me}{\langle \beta j' m' \rvert T_{LM} \lvert \alpha j m \rangle}
+\newcommand{\rme}{\langle \beta j' \rvert\vert T_L \vert\lvert \alpha j \rangle}
+\newcommand{\jphat}{\hat\jmath'}
+\newcommand{\hide}{\hphantom}
+
+\begin{document}
+
+\title{Calculating M-scheme matrix elements from coupled two-body RMEs}
+
+\author{Patrick J. Fasano}
+\affiliation{Department of Physics, University of Notre Dame, Notre Dame, Indiana 46556-5670, USA}
+
+\author{Pieter Maris}
+\affiliation{Department of Physics and Astronomy, Iowa State University, Ames, Iowa 50011-3160, USA}
+
+\date{\today}
+
+\maketitle
+
+
+Numerous conventions in the literature exist for the definition of the reduced
+matrix element in the Wigner-Eckart theorem. Here we derive the relationship
+between matrix elements (of a spherical tensor operator) in the uncoupled basis
+to reduced matrix elements in the coupled basis. We adopt the following convention
+for the Clebsch-Gordan coefficients and Wigner 3J symbols \cite{suhonen2007:nucleons-nucleus}
+\begin{equation}
+  (j_a m_a j_b m_b \vert J M) = (-1)^{j_b-j_a-M}\hat{J} \threej{j_a}{m_a}{j_b}{m_b}{J}{-M}
+\end{equation}
+where \(\hat{J} = \sqrt{2J+1}\).
+
+First, we relate the coupled and uncoupled antisymmetrized two-particle bases:
+\begin{align}
+  \ket{a m_a b m_b}_\mathrm{AS} &= \sum_J (j_a m_a j_b m_b \vert J M) \ket{a b; J M}_\mathrm{AS}\\
+  &=\sum_J (-1)^{j_b-j_a-M}\hat{J} \threej{j_a}{m_a}{j_b}{m_b}{J}{-M} \ket{a b; J M}_\mathrm{AS}
+\end{align}
+
+Next we insert these into the matrix element:
+\begin{align*}
+  & \bra{a m_a b m_b}\mathcal{O}\ket{c m_c d m_d} \\
+    &= \qty(\sum_{J'} (-1)^{j_b-j_a-M'}\hat{J'} \threej{j_a}{m_a}{j_b}{m_b}{J'}{-M'} \bra{a b; J' M'}_\mathrm{AS})
+      \mathcal{O} \\
+    &\qquad \times \qty(\sum_J (-1)^{j_d-j_c-M}\hat{J} \threej{j_c}{m_c}{j_d}{m_d}{J}{-M} \ket{c d; J M}_\mathrm{AS})\\
+    &= (-1)^{j_b -j_a} (-1)^{j_d-j_c} (-1)^{-M'-M} \\
+    &\qquad \times \sum_{J',J} \hat{J'} \hat{J} \threej{j_a}{m_a}{j_b}{m_b}{J'}{-M'}
+      \threej{j_c}{m_c}{j_d}{m_d}{J}{-M} \bra{ab;J'M'}\mathcal{O}\ket{cd;JM}_\mathrm{AS}
+\end{align*}
+
+We use the Wigner-Eckart theorem to write the matrix element in terms of reduced matrix elements
+\begin{equation*}
+  \bra{\alpha J' M'}\mathcal{O}_{J_0 M_0}\ket{\beta J M}
+    = (-1)^{J'-M'}\threej{J'}{-M'}{J_0}{M_0}{J}{M} \langle{\alpha J'}\vert\vert\mathcal{O}_{J_0}\vert\vert{\beta J}\rangle
+\end{equation*}
+
+
+Finally, we express the uncoupled matrix element in terms of the coupled reduced matrix element:
+\begin{align*}
+  & \bra{a m_a b m_b}\mathcal{O}_{J_0 M_0}\ket{c m_c d m_d} \\
+  &= (-1)^{j_b -j_a} (-1)^{j_d-j_c} (-1)^{-M'-M} \\
+    &\qquad \times \sum_{J',J} \hat{J'} \hat{J} \threej{j_a}{m_a}{j_b}{m_b}{J'}{-M'}
+      \threej{j_c}{m_c}{j_d}{m_d}{J}{-M} \bra{ab;J'M'}\mathcal{O}\ket{cd;JM}_\mathrm{AS}\\
+  &= (-1)^{j_b -j_a} (-1)^{j_d-j_c} (-1)^{-M'-M} \\
+    &\qquad \times \sum_{J',J} (-1)^{J'-M'} \hat{J'} \hat{J} \threej{j_a}{m_a}{j_b}{m_b}{J'}{-M'}
+      \threej{j_c}{m_c}{j_d}{m_d}{J}{-M} \threej{J'}{-M'}{J_0}{M_0}{J}{M} \langle{ab; J'}\vert\vert\mathcal{O}_{J_0}\vert\vert{cd; J}\rangle\\
+\end{align*}
+
+If we assume that $j_a,j_b,j_c,j_d \in \mathbb{Z}+\frac{1}{2}$ and that
+$J',M',J,M,J_0,M_0 \in \mathbb{Z}$, we can simplify and rearrange the phase
+factors to a form which can be implemented in \texttt{mfdn-transitions}:
+
+\begin{multline}
+  \bra{a m_a b m_b}\mathcal{O}_{J_0 M_0}\ket{c m_c d m_d} = \\
+  (-1)^{j_b-j_a + j_d-j_c - M}
+  \sum_{J'} (-1)^{J'} \hat{J'} \threej{j_a}{m_a}{j_b}{m_b}{J'}{-M'}
+  \sum_{J} \hat{J} \threej{j_c}{m_c}{j_d}{m_d}{J}{-M} \threej{J'}{-M'}{J_0}{M_0}{J}{M} \langle{ab; J'}\vert\vert\mathcal{O}_{J_0}\vert\vert{cd; J}\rangle
+\end{multline}
+% \bibliographystyle{apsrevm}
+\bibliography{master,mc,theory,expt,data,books,proc,misc}
+
+\end{document}
+
+%-----------------------------------------------------------------------
+% End of amsart-template.tex
+%-----------------------------------------------------------------------
