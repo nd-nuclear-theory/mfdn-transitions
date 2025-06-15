@@ -1,3 +1,0 @@
-tbme-identity.dat filter=lfs diff=lfs merge=lfs -text
-mfdn_smwf* filter=lfs diff=lfs merge=lfs -text
-mfdn_MBgroups* filter=lfs diff=lfs merge=lfs -text
