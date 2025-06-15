@@ -451,8 +451,8 @@ subroutine WriteOBDME(seq_bra, seq_ket, mnK, mxK, nobdme, nobdme_p, nobdme_n, &
      endif
   enddo
   ! store source quantum numbers for independent life of OBDME file
-1 format(2i3,i5,2i4,sp,i4,ss,i4,2f12.5,'  ! bra Z N seq 2J 2Mj par n T En')
-2 format(2i3,i5,2i4,sp,i4,ss,i4,2f12.5,'  ! ket Z N seq 2J 2Mj par n T En')
+1 format(2i3,x,i4,2i4,sp,i4,ss,x,i4,2f12.5,'  ! bra Z N seq 2J 2Mj par n T En')
+2 format(2i3,x,i4,2i4,sp,i4,ss,x,i4,2f12.5,'  ! ket Z N seq 2J 2Mj par n T En')
   !
 11 format('#  LABELS for Single-Particle Orbitals')
 12 format('#  ia, na, la, 2ja, 2tz, wt')

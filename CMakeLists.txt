@@ -53,7 +53,6 @@ set(TRANSITIONS_MAX_PATHLENGTH
     1024
     CACHE STRING "maximum path length"
 )
-option(TRANSITIONS_TZ_CHANGING "Enable Tz-changing |Delta_Tz|={1,2} operators" ON)
 option(USE_AVX512 "Enable AVX-512 architecture flags" OFF)
 option(USE_SANTITIZER "Enable leak detection" OFF)
 option(USE_CHECK "Enable bounds checking" OFF)
@@ -213,11 +212,11 @@ set(mfdn-transitions_SOURCES
 # define mfdn-transitions object library and add source files
 add_library(mfdn-transitions OBJECT ${mfdn-transitions_SOURCES} src/module_TBME_Tz0.f90)
 add_library(mfdn-transitions::mfdn-transitions ALIAS mfdn-transitions)
-if(TRANSITIONS_TZ_CHANGING)
-  add_library(mfdn-transitions-DeltaTz OBJECT ${mfdn-transitions_SOURCES} src/module_TBME_Tz12.f90)
-  target_compile_definitions(mfdn-transitions-DeltaTz PUBLIC DeltaTz)
-  add_library(mfdn-transitions::mfdn-transitions-DeltaTz ALIAS mfdn-transitions-DeltaTz)
-endif()
+
+add_library(mfdn-transitions-DeltaTz OBJECT ${mfdn-transitions_SOURCES} src/module_TBME_Tz12.f90)
+target_compile_definitions(mfdn-transitions-DeltaTz PUBLIC DeltaTz)
+add_library(mfdn-transitions::mfdn-transitions-DeltaTz ALIAS mfdn-transitions-DeltaTz)
+
 # ##############################################################################
 # link dependencies and flags
 # ##############################################################################
@@ -226,12 +225,11 @@ target_link_libraries(mfdn-transitions PUBLIC compile-options)
 target_link_libraries(
   mfdn-transitions PUBLIC MPI::MPI_Fortran OpenMP::OpenMP_Fortran BLAS::BLAS GSL::gsl
 )
-if(TRANSITIONS_TZ_CHANGING)
-  target_link_libraries(mfdn-transitions-DeltaTz PUBLIC compile-options GSL::gsl)
-  target_link_libraries(
-    mfdn-transitions-DeltaTz PUBLIC MPI::MPI_Fortran OpenMP::OpenMP_Fortran BLAS::BLAS GSL::gsl
-  )
-endif()
+
+target_link_libraries(mfdn-transitions-DeltaTz PUBLIC compile-options GSL::gsl)
+target_link_libraries(
+  mfdn-transitions-DeltaTz PUBLIC MPI::MPI_Fortran OpenMP::OpenMP_Fortran BLAS::BLAS GSL::gsl
+)
 
 # ##############################################################################
 # define main executable
@@ -247,17 +245,15 @@ target_link_libraries(
 target_compile_definitions(xtransitions PRIVATE VCS_REVISION="${PACKAGE_GIT_VERSION}")
 
 # xtransitions-DeltaTz
-if(TRANSITIONS_TZ_CHANGING)
-  add_executable(xtransitions-DeltaTz src/MFDn_Transitions.f90)
-  target_compile_definitions(xtransitions-DeltaTz PRIVATE DeltaTz)
-  target_link_libraries(xtransitions-DeltaTz PRIVATE compile-options)
-  target_link_libraries(
-    xtransitions-DeltaTz PRIVATE mfdn-transitions::mfdn-transitions-DeltaTz
-                         MPI::MPI_Fortran
-                         OpenMP::OpenMP_Fortran
-  )
-  target_compile_definitions(xtransitions-DeltaTz PRIVATE VCS_REVISION="${PACKAGE_GIT_VERSION}")
-endif()
+add_executable(xtransitions-DeltaTz src/MFDn_Transitions.f90)
+target_compile_definitions(xtransitions-DeltaTz PRIVATE DeltaTz)
+target_link_libraries(xtransitions-DeltaTz PRIVATE compile-options)
+target_link_libraries(
+  xtransitions-DeltaTz PRIVATE mfdn-transitions::mfdn-transitions-DeltaTz
+                       MPI::MPI_Fortran
+                       OpenMP::OpenMP_Fortran
+)
+target_compile_definitions(xtransitions-DeltaTz PRIVATE VCS_REVISION="${PACKAGE_GIT_VERSION}")
 
 # xapply
 add_executable(xapply src/MFDn_apply_operator.f90)
@@ -287,10 +283,7 @@ target_compile_definitions(xapply-DeltaTz PRIVATE VCS_REVISION="${PACKAGE_GIT_VE
 # uncommented and used
 # ##############################################################################
 
-install(TARGETS xtransitions)
-if(TRANSITIONS_TZ_CHANGING)
-  install(TARGETS xtransitions-DeltaTz)
-endif()
+install(TARGETS xtransitions xtransitions-DeltaTz)
 install(TARGETS xapply xapply-DeltaTz)
 
 ## install(TARGETS xtransitions EXPORT mfdn-transitionsTargets)

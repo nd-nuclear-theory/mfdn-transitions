@@ -1047,8 +1047,8 @@ program MFDn_Transitions
         write(10, *)
 2200    format('# ',A3,' ',A3,' ',A3,'  ',A)
 2201    format('  ',i3,' ',i3,' ',i3,'  ',A)
-2210    format('# ',A4,  ' ',A3,' ',A3,'  ',A4,  ' ',A3,' ',A3,'  ',A15)
-2211    format('  ',f4.1,' ',i3,' ',i3,'  ',f4.1,' ',i3,' ',i3,'  ',e15.8)
+2210    format('# ',A4,  ' ',A3,' ',A4,'  ',A4,  ' ',A3,' ',A4,'  ',A15)
+2211    format('  ',f4.1,' ',i3,' ',i4,'  ',f4.1,' ',i3,' ',i4,'  ',e15.8)
         do i = 1, numTBtrans
            write(10, 1100) '[Two-body observable]'
            write(10, 2200) 'J0', 'g0', 'Tz0', 'name'

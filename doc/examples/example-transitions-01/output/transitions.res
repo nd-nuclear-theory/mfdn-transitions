@@ -10,26 +10,26 @@ OMPthreads =        8
 [PARAMETERS]
 
 [Bra basis]
-basisfilename = Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_MBgroups
+basisfilename = ../data/Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_MBgroups
 num_protons   =        3
 num_neutrons  =        3
 Mj            =        1.0
 parity        =        1
 
 [Ket basis]
-basisfilename = Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_MBgroups
+basisfilename = ../data/Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_MBgroups
 num_protons   =        3
 num_neutrons  =        3
 Mj            =        1.0
 parity        =        1
 
 [State information]
-smwffilename_bra = Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf
+smwffilename_bra = ../data/Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf
 num_bras =        1
 brastate =        1
 J_bra    =        1.0
 n_bra    =        1
-smwffilename_ket = Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf
+smwffilename_ket = ../data/Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf
 num_kets =        1
 ketstate =        1
 J_ket    =        1.0
@@ -39,7 +39,14 @@ n_ket    =        1
 
 [Two-body observable]
 #  J0  g0 Tz0  name
-    0   0   0  tbme-Tintr
+    0   0   0  ../data/identity_h2v15099
+
+#   Jf  gf  nf    Ji  gi  ni              rme
+   1.0   0   1   1.0   0   1   0.17320509E+01
+
+[Two-body observable]
+#  J0  g0 Tz0  name
+    0   0   0  ../data/Tintr_h2v15099
 
 #   Jf  gf  nf    Ji  gi  ni              rme
    1.0   0   1   1.0   0   1   0.13019831E+03
