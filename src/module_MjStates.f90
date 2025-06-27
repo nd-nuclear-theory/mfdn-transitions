@@ -24,22 +24,22 @@ contains
     numstates = 0
     mbgroup(1:nparticles) = groupID(1:nparticles)
     mbstate(1:nparticles) = mbgroup(1:nparticles)
-    !      
+    !
     call setlastmj(nparticles, nspstates, mj2_sp, twomj, nextbin, mbstate, flag)
     if (flag .eq. 0) numstates = numstates + 1
     !
     flag = 0
     do while (flag .eq. 0)
-       flag = -1
-       do while (flag .eq. -1)
-          call incrementmj(nparticles, nspstates, mj2_sp, twomj, nextbin, mbgroup, mbstate, flag)
-       enddo
-       if (flag .eq. 0) numstates = numstates + 1
-    enddo
+      flag = -1
+      do while (flag .eq. -1)
+        call incrementmj(nparticles, nspstates, mj2_sp, twomj, nextbin, mbgroup, mbstate, flag)
+      end do
+      if (flag .eq. 0) numstates = numstates + 1
+    end do
     !
     return
   end subroutine MjStatesCount
-  
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   subroutine MjStatesGen(nparticles, nspstates, mj2_sp, twomj, nextbin, groupID, numstates, mbstatelist)
@@ -59,44 +59,44 @@ contains
     currentstate = 0
     mbgroup(1:nparticles) = groupID(1:nparticles)
     mbstate(1:nparticles) = mbgroup(1:nparticles)
-    !      
+    !
     call setlastmj(nparticles, nspstates, mj2_sp, twomj, nextbin, mbstate, flag)
     !
     if (flag .eq. 0) then
-       currentstate = currentstate + 1
-       mbstatelist(1:nparticles, currentstate) = mbstate(1:nparticles)
-    endif
+      currentstate = currentstate + 1
+      mbstatelist(1:nparticles, currentstate) = mbstate(1:nparticles)
+    end if
     !
     flag = 0
     do while (flag .eq. 0)
-       flag = -1
-       do while (flag .eq. -1)
-          call incrementmj(nparticles, nspstates, mj2_sp, twomj, nextbin, mbgroup, mbstate, flag)
-       enddo
-       if (flag .eq. 0) then
-          currentstate = currentstate + 1
-          mbstatelist(1:nparticles, currentstate) = mbstate(1:nparticles)
-       endif
-    enddo
+      flag = -1
+      do while (flag .eq. -1)
+        call incrementmj(nparticles, nspstates, mj2_sp, twomj, nextbin, mbgroup, mbstate, flag)
+      end do
+      if (flag .eq. 0) then
+        currentstate = currentstate + 1
+        mbstatelist(1:nparticles, currentstate) = mbstate(1:nparticles)
+      end if
+    end do
     !
     numstates = currentstate
     return
   end subroutine MjStatesGen
-  
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   subroutine setlastmj(nparticles, nspstates, mj2_sp, twomj, nextbin, mbstate, flag)
     !
     ! Attempts to change the last particle in the many-body state to
-    ! satisfy the mj constraint within the same group of many-body states.  
-    ! On exit, 
+    ! satisfy the mj constraint within the same group of many-body states.
+    ! On exit,
     !   flag = 1  : have pulled too much mj from last state
     !   flag = 0  : success!
     !   flag = -1 : need to pull more mj from last state
     !
     ! NOTE: this code relies on complete set (m_j) values in each orbital
-    !   and order from low to high:   
-    !   m_j = -j, -j+1, ....., j-1, j 
+    !   and order from low to high:
+    !   m_j = -j, -j+1, ....., j-1, j
     !
     integer, intent(in) :: nparticles, nspstates, twomj
     integer, dimension(nspstates), intent(in) :: mj2_sp, nextbin
@@ -104,24 +104,24 @@ contains
     integer, intent(out) :: flag
     ! local variables
     integer :: i, deltamj, ilast
-    ! 
-   deltamj = twomj
+    !
+    deltamj = twomj
     do i = 1, nparticles
-       deltamj = deltamj - mj2_sp(mbstate(i))
-    enddo
+      deltamj = deltamj - mj2_sp(mbstate(i))
+    end do
     !
     if (deltamj .lt. 0) then
-       flag = 1
-       return
-    endif
+      flag = 1
+      return
+    end if
     !
-    ilast = mbstate(nparticles) + deltamj / 2
-    if (ilast .lt. nextbin(mbstate(nparticles))) then  
-       mbstate(nparticles) = ilast
-       flag = 0
+    ilast = mbstate(nparticles) + deltamj/2
+    if (ilast .lt. nextbin(mbstate(nparticles))) then
+      mbstate(nparticles) = ilast
+      flag = 0
     else
-       flag = -1
-    endif
+      flag = -1
+    end if
     !
     return
   end subroutine setlastmj
@@ -135,7 +135,7 @@ contains
     ! within the same mbgroup that also satisfies the mj constraint.
     !
     integer, intent(in) :: nparticles, nspstates, twomj
-    integer, dimension(nspstates), intent(in) :: mj2_sp, nextbin 
+    integer, dimension(nspstates), intent(in) :: mj2_sp, nextbin
     integer, dimension(nparticles), intent(in) :: mbgroup
     integer, dimension(nparticles), intent(inout) :: mbstate
     integer, intent(inout) :: flag
@@ -143,34 +143,34 @@ contains
     integer :: i, j
     !
     do i = nparticles - 1, 1, -1
-       if (mbstate(i) .lt. (nextbin(mbgroup(i))-1)) then
-          mbstate(i) = mbstate(i) + 1
-          do j = i + 1, nparticles
-             if ((mbstate(j-1)+1) .ge. nextbin(mbgroup(j))) then
-                flag = 2
-                exit
-             else
-                mbstate(j) = mbstate(j-1) + 1
-                mbstate(j) = max(mbstate(j), mbgroup(j))
-             endif
-          enddo
-          if (flag .eq. 2) then
-             flag = 0
-             cycle
-          endif
-          call setlastmj(nparticles, nspstates, mj2_sp, twomj, nextbin, mbstate, flag)
-          if (flag .eq. 1) then
-             cycle
+      if (mbstate(i) .lt. (nextbin(mbgroup(i)) - 1)) then
+        mbstate(i) = mbstate(i) + 1
+        do j = i + 1, nparticles
+          if ((mbstate(j - 1) + 1) .ge. nextbin(mbgroup(j))) then
+            flag = 2
+            exit
           else
-             return
-          endif
-       endif
-    enddo
+            mbstate(j) = mbstate(j - 1) + 1
+            mbstate(j) = max(mbstate(j), mbgroup(j))
+          end if
+        end do
+        if (flag .eq. 2) then
+          flag = 0
+          cycle
+        end if
+        call setlastmj(nparticles, nspstates, mj2_sp, twomj, nextbin, mbstate, flag)
+        if (flag .eq. 1) then
+          cycle
+        else
+          return
+        end if
+      end if
+    end do
     !
     flag = 1
-    return      
+    return
   end subroutine incrementmj
-  
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  
+
 end module MjStates

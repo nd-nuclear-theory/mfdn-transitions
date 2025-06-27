@@ -1,0 +1,9 @@
+# Configuration file for use with fprettify
+#
+#   https://github.com/pseewald/fprettify
+#
+# Invoke as follows:
+#
+#   % fprettify --recursive .
+
+indent = 2
