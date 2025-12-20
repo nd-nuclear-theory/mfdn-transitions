@@ -22,19 +22,19 @@ subroutine MBnonzeroLocation(statesize, rowstate, colstate, rowdifloc, coldifloc
   ncoldiffs = 0
   !
   do i = 1, statesize
-     if (rowstate(irow) .eq. colstate(icol)) then
-        irow = irow + 1
-        icol = icol + 1
-     elseif (rowstate(irow) .gt. colstate(icol)) then
-        ncoldiffs = ncoldiffs + 1
-        coldifloc(ncoldiffs) = icol
-        icol = icol + 1
-     else
-        nrowdiffs = nrowdiffs + 1
-        rowdifloc(nrowdiffs) = irow
-        irow = irow + 1
-     endif
-  enddo
+    if (rowstate(irow) .eq. colstate(icol)) then
+      irow = irow + 1
+      icol = icol + 1
+    elseif (rowstate(irow) .gt. colstate(icol)) then
+      ncoldiffs = ncoldiffs + 1
+      coldifloc(ncoldiffs) = icol
+      icol = icol + 1
+    else
+      nrowdiffs = nrowdiffs + 1
+      rowdifloc(nrowdiffs) = irow
+      irow = irow + 1
+    end if
+  end do
   !
   ndiffs = max(ncoldiffs, nrowdiffs)
   !

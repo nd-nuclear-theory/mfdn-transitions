@@ -1,19 +1,18 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 !     contains
-!       subroutine EvalTBTrans
-!       subroutine ComputeTBobsTileTD
-!       subroutine ComputeTBobsTileBU
-!       subroutine set_extended_diffs_2NF
+!       subroutine ApplyTBop
+!       subroutine ApplyTBopTileTD
+!       subroutine ApplyTBopTileBU
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine EvalTBobs(maxnMstates, &
+subroutine ApplyTBop(maxnMstates, &
                      Z_col, N_col, ncolgroupids, colgroupidlist, &
-                     TwoMj_col, colMstateptr, numcolstates, ncolamps, colamp, &
+                     TwoMj_col, colMstateptr, numcolstates, &
                      Z_row, N_row, nrowgroupids, rowgroupidlist, &
-                     TwoMj_row, rowMstateptr, numrowstates, nrowamps, rowamp, &
-                     coltileptr, ntiles, rowind, tilediff, nTBops, TBobs)
+                     TwoMj_row, rowMstateptr, numrowstates, &
+                     coltileptr, ntiles, rowind, tilediff, namps, colamp, rowamp)
   !
   use SPbasis, only: nparticles, nspstates, classoffset
   use SPbasis, only: orb_sp, mj2_sp, next_sp_bin, j2_orb, pr_orb
@@ -24,37 +23,36 @@ subroutine EvalTBobs(maxnMstates, &
   use TBME_Tz0, only: Jop, nTBMEs_max, Set_TBME_array
 #endif
   implicit none
-  integer, intent(in) :: maxnMstates, ntiles, nTBops
-  integer, intent(in) :: Z_col, N_col, TwoMj_col, ncolgroupids, numcolstates, ncolamps
-  integer, intent(in) :: Z_row, N_row, TwoMj_row, nrowgroupids, numrowstates, nrowamps
+  integer, intent(in) :: maxnMstates, ntiles, namps
+  integer, intent(in) :: Z_col, N_col, TwoMj_col, ncolgroupids, numcolstates
+  integer, intent(in) :: Z_row, N_row, TwoMj_row, nrowgroupids, numrowstates
   integer(kind=2), dimension(nparticles, ncolgroupids), intent(in) :: colgroupidlist
   integer(kind=2), dimension(nparticles, nrowgroupids), intent(in) :: rowgroupidlist
   integer, dimension(ncolgroupids + 1), intent(in) :: colMstateptr
   integer, dimension(nrowgroupids + 1), intent(in) :: rowMstateptr
   integer, dimension(ncolgroupids + 1), intent(in) :: coltileptr
   integer, dimension(ntiles + 1), intent(in) :: rowind, tilediff
-  real(kind=4), dimension(ncolamps, numcolstates), intent(in) :: colamp
-  real(kind=4), dimension(nrowamps, numrowstates), intent(in) :: rowamp
-  real(kind=8), dimension(nTBops, nrowamps, ncolamps), intent(out) :: TBobs
+  real(kind=4), dimension(namps, numcolstates), intent(in) :: colamp
+  real(kind=4), dimension(namps, numrowstates), intent(inout) :: rowamp
   !
   ! local variables
   logical, external :: pairwiseless
   logical :: abIDN, cdIDN, DIAG
   integer :: DeltaMj, TwoMj, offset1, offset2, statesize, nTBMEs, reorder
   integer :: i, j, k, k1, k2, ndiffs, iprev, icur, n_grp_SPstates
+  integer :: ii, jj, kk
   integer :: icol, nabbc, colnumstates, jrow, nabbr, rownumstates
   integer :: orba, orbb, orbc, orbd, j2a, j2b, j2c, j2d, parab, parcd
   integer(kind=2), dimension(nparticles, maxnMstates) :: colMBstates, rowMBstates
   integer(kind=2), dimension(nparticles + 2) :: colstate, rowstate, tmpstate
   integer(kind=2), dimension(2) :: rowdiffs, coldiffs
   integer, dimension(nparticles + 2) :: rowdifloc, coldifloc
-  real(kind=4), dimension(nTBops, nTBMEs_max) :: TBMEarray
+  real(kind=4), dimension(1, nTBMEs_max) :: TBMEarray
   !
   integer(kind=8), dimension(maxnMstates) :: colabbr1, colabbr2, rowabbr1, rowabbr2
   integer(kind=8), dimension(maxnMstates) :: colMBbitrep
+  real(kind=4), dimension(namps, maxnMstates) :: tempamp
   integer, dimension(nparticles) :: colgrp_SPoffset
-  !
-  TBobs(1:nTBops, 1:nrowamps, 1:ncolamps) = 0.d0
   !
   TwoMj = TwoMj_row - TwoMj_col
   DeltaMj = TwoMj/2
@@ -64,6 +62,7 @@ subroutine EvalTBobs(maxnMstates, &
   !
   !$omp parallel default(shared)                                   &
   !$omp          private(i, j, k, k1, k2,                          &
+  !$omp                  ii, jj, kk,                               &
   !$omp                  icol, nabbc, colabbr1, colabbr2,          &
   !$omp                  colnumstates, colMBstates, colstate,      &
   !$omp                  colMBbitrep, colgrp_SPoffset,             &
@@ -74,7 +73,7 @@ subroutine EvalTBobs(maxnMstates, &
   !$omp                  orba,orbb,orbc,orbd, j2a,j2b,j2c,j2d,     &
   !$omp                  parab, parcd, coldiffs, rowdiffs,         &
   !$omp                  reorder, abIDN, cdIDN, DIAG, nTBMEs, TBMEarray) &
-  !$omp          reduction(+: TBobs)
+  !$omp          private(tempamp)
   !
   colstate(nparticles + 1) = nspstates + 1
   colstate(nparticles + 2) = nspstates + 2
@@ -137,6 +136,7 @@ subroutine EvalTBobs(maxnMstates, &
       rownumstates = maxnMstates
       call mjstatesgen(nparticles, nspstates, mj2_sp, TwoMj_row, &
                        next_sp_bin, rowstate, rownumstates, rowMBstates)
+      tempamp(1:namps, 1:rownumstates) = 0.
       !
       if (tilediff(k) .lt. 2) then
         !
@@ -144,12 +144,12 @@ subroutine EvalTBobs(maxnMstates, &
         call abbrstates(Z_row, N_row, offset1, offset2, &
                         rownumstates, rowMBstates, nabbr, rowabbr1, rowabbr2)
         !
-        call ComputeTBobsTileTD(statesize, nparticles, &
-                                rowstate, rownumstates, rowMBstates, nabbr, rowabbr1, rowabbr2, &
-                                nrowamps, rowamp(1:nrowamps, jrow:jrow + rownumstates - 1), &
-                                tmpstate, colnumstates, colMBstates, nabbc, colabbr1, colabbr2, &
-                                ncolamps, colamp(1:ncolamps, icol:icol + colnumstates - 1), &
-                                nTBops, TBobs)
+        call ApplyTBopTileTD(statesize, nparticles, &
+                             rowstate, rownumstates, rowMBstates, nabbr, rowabbr1, rowabbr2, &
+                             tmpstate, colnumstates, colMBstates, nabbc, colabbr1, colabbr2, &
+                             namps, &
+                             colamp(1:namps, icol:icol + colnumstates - 1), &
+                             tempamp(1:namps, 1:rownumstates))
         !
       elseif (tilediff(k) .eq. 2) then
         !
@@ -182,11 +182,11 @@ subroutine EvalTBobs(maxnMstates, &
         nTBMEs = nTBMEs_max
         if (pairwiseless(orba, orbb, orbc, orbd)) then
           call Set_TBME_array(parab, parcd, orba, orbb, orbc, orbd, &
-                              nTBops, nTBMEs, TBMEarray)
+                              1, nTBMEs, TBMEarray)
           reorder = 0
         else
           call Set_TBME_array(parcd, parab, orbc, orbd, orba, orbb, &
-                              nTBops, nTBMEs, TBMEarray)
+                              1, nTBMEs, TBMEarray)
           reorder = (-1)**DeltaMj
         end if
         if (nTBMEs .eq. 0) cycle
@@ -195,15 +195,23 @@ subroutine EvalTBobs(maxnMstates, &
         cdIDN = orbc .eq. orbd
         DIAG = (orba .eq. orbc) .and. (orbb .eq. orbd)
         !
-        call ComputeTBobsTileBU(j2a, j2b, j2c, j2d, TwoMj, &
-                                rownumstates, rowMBstates, rowdiffs, rowdifloc, &
-                                colnumstates, colMBbitrep, coldiffs, coldifloc, &
-                                colgrp_SPoffset, abIDN, cdIDN, DIAG, reorder, &
-                                nrowamps, rowamp(1:nrowamps, jrow:jrow + rownumstates - 1), &
-                                ncolamps, colamp(1:ncolamps, icol:icol + colnumstates - 1), &
-                                nTBMEs, TBMEarray, nTBops, TBobs)
+        call ApplyTBopTileBU(j2a, j2b, j2c, j2d, TwoMj, &
+                             rownumstates, rowMBstates, rowdiffs, rowdifloc, &
+                             colnumstates, colMBbitrep, coldiffs, coldifloc, &
+                             colgrp_SPoffset, abIDN, cdIDN, DIAG, reorder, &
+                             nTBMEs, TBMEarray, namps, &
+                             colamp(1:namps, icol:icol + colnumstates - 1), &
+                             tempamp(1:namps, 1:rownumstates))
         !
       end if
+      !omp critical
+      !omp simd collapse(2)
+      do ii = 1, namps
+        do jj = 1, rownumstates
+          rowamp(ii, jrow + jj - 1) = rowamp(ii, jrow + jj - 1) + tempamp(ii, jj)
+        end do
+      end do
+      !omp end critical
       !
     end do
   end do
@@ -212,38 +220,35 @@ subroutine EvalTBobs(maxnMstates, &
   !$omp end parallel
   !
   return
-end subroutine EvalTBobs
+end subroutine ApplyTBop
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine ComputeTBobsTileTD(statesize, npart, &
-                              rowstate, nrows, rowMBstates, nabbr, rowabbr1, rowabbr2, nramps, rowamp, &
-                              colstate, ncols, colMBstates, nabbc, colabbr1, colabbr2, ncamps, colamp, &
-                              nTBops, TBobs)
+subroutine ApplyTBopTileTD(statesize, npart, &
+                           rowstate, nrows, rowMBstates, nabbr, rowabbr1, rowabbr2, &
+                           colstate, ncols, colMBstates, nabbc, colabbr1, colabbr2, &
+                           namps, colamp, rowamp)
   use TBops, only: MBtwobodyObs
   implicit none
   !
-  integer, intent(in) :: statesize, npart, nrows, ncols, nabbr, nabbc, nramps, ncamps, nTBops
+  integer, intent(in) :: statesize, npart, nrows, ncols, nabbr, nabbc, namps
   integer(kind=2), dimension(statesize) :: colstate, rowstate
   integer(kind=2), dimension(npart, nrows), intent(in) :: rowMBstates
   integer(kind=2), dimension(npart, ncols), intent(in) :: colMBstates
   integer(kind=8), dimension(nabbr), intent(in) :: rowabbr1, rowabbr2
   integer(kind=8), dimension(nabbc), intent(in) :: colabbr1, colabbr2
-  real(kind=4), dimension(nramps, nrows), intent(in) :: rowamp
-  real(kind=4), dimension(ncamps, ncols), intent(in) :: colamp
-  real(kind=8), dimension(nTBops, nramps, ncamps), intent(inout) :: TBobs
+  real(kind=4), dimension(namps, ncols), intent(in) :: colamp
+  real(kind=4), dimension(namps, nrows), intent(inout) :: rowamp
   !
   ! local variables
-  integer :: i, j, ndiffs, c, r, t
+  integer :: i, j, k, ndiffs, c, r, t
   integer(kind=8) :: ii1, ii2, ii3, ii4, XOR1, XOR2
   integer, dimension(statesize) :: rowdifloc, coldifloc
-  real(kind=8), dimension(nTBops) :: xTBops
-  real(kind=8) :: ramp(1:nramps), xamps
+  real(kind=8), dimension(1) :: xTBops
   !
   ! loop over row states in this tile
   do j = 1, nrows
     rowstate(1:npart) = rowMBstates(1:npart, j)
-    ramp(1:nramps) = rowamp(1:nramps, j)
     ii3 = rowabbr1(j)
     ii4 = rowabbr2(j)
     do i = 1, ncols           ! loop over column states
@@ -261,15 +266,10 @@ subroutine ComputeTBobsTileTD(statesize, npart, &
         !
         if (ndiffs .le. 2) then
           call MBtwobodyObs(rowstate, colstate, ndiffs, &
-                            rowdifloc(1:2), coldifloc(1:2), nTBops, xTBops)
-          !$omp simd collapse(3)
-          do c = 1, ncamps
-            do r = 1, nramps
-              do t = 1, nTBops
-                xamps = ramp(r)*colamp(c, i)
-                TBobs(t, r, c) = TBobs(t, r, c) + xamps*xTBops(t)
-              end do
-            end do
+                            rowdifloc(1:2), coldifloc(1:2), 1, xTBops)
+          !$omp simd
+          do k = 1, namps
+            rowamp(k, j) = rowamp(k, j) + colamp(k, i)*xTBops(1)
           end do
         end if
         !
@@ -279,15 +279,15 @@ subroutine ComputeTBobsTileTD(statesize, npart, &
   end do
   !
   return
-end subroutine ComputeTBobsTileTD
+end subroutine ApplyTBopTileTD
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine ComputeTBobsTileBU(j2a, j2b, j2c, j2d, TwoMj, &
-                              nrows, rowMBstates, rowdiffs, rowdifloc, &
-                              ncols, colMBbitrep, coldiffs, coldifloc, &
-                              colgrp_SPoffset, abIDN, cdIDN, DIAG, reorder, &
-                              nramps, rowamp, ncamps, colamp, nTBMEs, TBMEarray, nTBops, TBobs)
+subroutine ApplyTBopTileBU(j2a, j2b, j2c, j2d, TwoMj, &
+                           nrows, rowMBstates, rowdiffs, rowdifloc, &
+                           ncols, colMBbitrep, coldiffs, coldifloc, &
+                           colgrp_SPoffset, abIDN, cdIDN, DIAG, reorder, &
+                           nTBMEs, TBMEarray, namps, colamp, rowamp)
   !
   use SPbasis, only: nparticles, next_sp_bin, mj2_sp, orb_sp, pr_orb
   use TBops, only: TBops_Eval, TBops_EvalDiag
@@ -295,17 +295,16 @@ subroutine ComputeTBobsTileBU(j2a, j2b, j2c, j2d, TwoMj, &
   implicit none
   !
   logical, intent(in) :: abIDN, cdIDN, DIAG
-  integer, intent(in) :: nrows, ncols, nramps, ncamps, nTBops, reorder, nTBMEs
+  integer, intent(in) :: nrows, ncols, namps, reorder, nTBMEs
   integer(kind=2), dimension(nparticles, nrows), intent(in) :: rowMBstates
   integer(kind=2), dimension(2), intent(in) :: rowdiffs, coldiffs
   integer, dimension(2), intent(in) :: rowdifloc, coldifloc
   integer, intent(in) :: j2a, j2b, j2c, j2d, TwoMj
   integer(kind=8), dimension(ncols), intent(in) :: colMBbitrep
   integer, dimension(nparticles), intent(in) :: colgrp_SPoffset
-  real(kind=4), dimension(nramps, nrows), intent(in) :: rowamp
-  real(kind=4), dimension(ncamps, ncols), intent(in) :: colamp
-  real(kind=4), dimension(nTBops, nTBMEs), intent(in) :: TBMEarray
-  real(kind=8), dimension(nTBops, nramps, ncamps), intent(inout) :: TBobs
+  real(kind=4), dimension(namps, ncols), intent(in) :: colamp
+  real(kind=4), dimension(1, nTBMEs), intent(in) :: TBMEarray
+  real(kind=4), dimension(namps, nrows), intent(inout) :: rowamp
   !
   !     work arrays
   integer, dimension(nparticles) :: MBstate, rowgrp_SPoffset
@@ -325,8 +324,8 @@ subroutine ComputeTBobsTileBU(j2a, j2b, j2c, j2d, TwoMj, &
   integer :: colTBstate1, colTBstate2, numcolTBstates
   integer :: TBgrp_SPoffset1, TBgrp_SPoffset2, itest
   integer(kind=8) :: rowbitrep
-  real(kind=8), dimension(nTBops) :: xops
-  real(kind=8) :: rampfactor(1:nramps), xamps
+  real(kind=8), dimension(1) :: xops
+  real(kind=8) :: xamps
   real :: phasefac, fac
   real, external :: myphase
   real(kind=8), parameter :: sqr2 = sqrt(2.d0)
@@ -454,7 +453,6 @@ subroutine ComputeTBobsTileBU(j2a, j2b, j2c, j2d, TwoMj, &
         end if
       end do
       !
-      rampfactor(1:nramps) = phasefac*rowamp(1:nramps, i)
       do j = 0, numcolTBstates
         if (colflg(j) .eq. 1) then
           mjcol1 = col1mjmin + 2*j
@@ -469,17 +467,17 @@ subroutine ComputeTBobsTileBU(j2a, j2b, j2c, j2d, TwoMj, &
           if (DIAG) then
             call TBops_EvalDiag(abIDN, cdIDN, &
                                 j2a, j2b, j2c, j2d, mjrow1, mjrow2, mjcol1, mjcol2, &
-                                nTBMEs, TBMEarray, nTBops, xops)
+                                nTBMEs, TBMEarray, 1, xops)
           else
             if (reorder .eq. 0) then
               call TBops_Eval(abIDN, cdIDN, &
                               j2a, j2b, j2c, j2d, mjrow1, mjrow2, mjcol1, mjcol2, &
-                              nTBMEs, TBMEarray, nTBops, xops)
+                              nTBMEs, TBMEarray, 1, xops)
             else
               call TBops_Eval(cdIDN, abIDN, &
                               j2c, j2d, j2a, j2b, mjcol1, mjcol2, mjrow1, mjrow2, &
-                              nTBMEs, TBMEarray, nTBops, xops)
-              xops(1:nTBops) = reorder*xops(1:nTBops)
+                              nTBMEs, TBMEarray, 1, xops)
+              xops(1) = reorder*xops(1)
             end if
           end if
           !
@@ -487,14 +485,9 @@ subroutine ComputeTBobsTileBU(j2a, j2b, j2c, j2d, TwoMj, &
           fac = myphase(difloc)
           !
           cj = colindx(j)
-          !$omp simd collapse(3)
-          do c = 1, ncamps
-            do r = 1, nramps
-              do t = 1, nTBops
-                xamps = fac*rampfactor(r)*colamp(c, cj)
-                TBobs(t, r, c) = TBobs(t, r, c) + xamps*xops(t)
-              end do
-            end do
+          !$omp simd
+          do k = 1, namps
+            rowamp(k, i) = rowamp(k, i) + fac*phasefac*colamp(k, cj)*xops(1)
           end do
         end if
       end do
@@ -529,61 +522,6 @@ subroutine ComputeTBobsTileBU(j2a, j2b, j2c, j2d, TwoMj, &
   end do
   !
   return
-end subroutine ComputeTBobsTileBU
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-subroutine set_extended_diffs_2NF(diffs, difloc, &
-                                  extdiffs, extdifloc, mjmin, mjmax)
-  !
-  use SPbasis, only: next_sp_bin, mj2_sp
-  implicit none
-  !
-  integer(kind=2), dimension(2), intent(in) :: diffs
-  integer, dimension(2), intent(in) :: difloc
-  integer(kind=2), dimension(2), intent(out) :: extdiffs
-  integer, dimension(2), intent(out) :: extdifloc
-  integer, dimension(2), intent(out) :: mjmin, mjmax
-  !
-  integer :: state1, state2, iloc1, iloc2
-  !
-  ! if necessary, extend diffs to include
-  ! the first SPstate/location of a (partitioned) orbital
-  iloc1 = difloc(1)
-  state1 = diffs(1)
-  if (next_sp_bin(state1) .eq. next_sp_bin(1)) then
-    state1 = 1
-    iloc1 = 1
-  else
-    do while (next_sp_bin(state1) .eq. next_sp_bin(state1 - 1))
-      state1 = state1 - 1
-      iloc1 = iloc1 - 1
-    end do
-  end if
-  mjmin(1) = mj2_sp(state1)
-  mjmax(1) = mj2_sp(next_sp_bin(state1) - 1)
-  !
-  iloc2 = difloc(2)
-  state2 = diffs(2)
-  if (next_sp_bin(state2) .eq. next_sp_bin(state1)) then
-    state2 = state1 + 1
-    iloc2 = iloc1 + 1
-    mjmax(1) = mjmax(1) - 2
-  else
-    do while (next_sp_bin(state2) .eq. next_sp_bin(state2 - 1))
-      state2 = state2 - 1
-      iloc2 = iloc2 - 1
-    end do
-  end if
-  mjmin(2) = mj2_sp(state2)
-  mjmax(2) = mj2_sp(next_sp_bin(state2) - 1)
-  !
-  extdiffs(1) = state1
-  extdiffs(2) = state2
-  extdifloc(1) = iloc1
-  extdifloc(2) = iloc2
-  !
-  return
-end subroutine set_extended_diffs_2NF
+end subroutine ApplyTBopTileBU
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

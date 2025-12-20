@@ -84,7 +84,7 @@ objects := module_Transitions_input.o module_nodeinfo.o module_SPbasis.o \
 	module_TBME_Tz0.o module_TBME_Tz12.o module_TBops.o module_OBops.o \
 	subrts_general.o subrts_bitrep.o subrts_read_MBbasis.o subrts_MBnonzero.o \
 	subrts_OBDME.o subrts_EvalOBDME.o subrts_inputTBME.o subrts_EvalTBTrans.o \
-	MFDn_Transitions.o
+	subrts_ApplyTBTrans.o
 
 ################################################################
 #
@@ -106,18 +106,21 @@ LINK.f = $(FCOMPILE) $(FFLAGS) $(LDFLAGS)
 ################################################################
 
 ifdef DEFTz
-xtransitions-DeltaTz: 	$(addprefix src/,$(objects))
+xtransitions-DeltaTz: 	$(addprefix src/,$(objects)) MFDn_Transitions.o
 		$(LINK.f) $^ $(LDLIBS) -o $@
 default:
 	xtransitions-DeltaTz
 else
-xtransitions: 	$(addprefix src/,$(objects))
+xtransitions: 	$(addprefix src/,$(objects)) MFDn_Transitions.o
 		$(LINK.f) $^ $(LDLIBS) -o $@
 default:
 	xtransitions
 endif
 
+xapply: 	$(addprefix src/,$(objects)) MFDn_apply_operator.o
+		$(LINK.f) $^ $(LDLIBS) -o $@
+
 clean:
-	rm -f src/*.o src/*.oo *.mod src/*__genmod.f90 *.lst src/*.optrpt xtransitions*
+	rm -f src/*.o src/*.oo *.mod src/*__genmod.f90 *.lst src/*.optrpt xtransitions* xapply*
 
 ################################################################

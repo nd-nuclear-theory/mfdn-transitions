@@ -1,0 +1,21 @@
+&transition_data
+
+! ket (source)
+infofilename_ket = '../data/Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf.info',
+basisfilename_ket = '../data/Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_MBgroups',
+smwffilename_ket = '../data/Z3-N3-Daejeon16-coul1-hw15.000-a_cm50-Nmax02-Mj1.0-lan600-tol1.0e-06/mfdn_smwf',
+TwoJ_ket(1) = 2,
+n_ket(1) = 1,
+
+! bra (target)
+infofilename_bra = 'target/mfdn_smwf.info',
+basisfilename_bra = 'target/mfdn_MBgroups',
+smwffilename_bra = 'target/mfdn_smwf',
+TwoJ_out(1) = 2,
+n_out(1) = 1,
+
+! operator application
+TBMEoperators(1) = '../data/identity_h2v15099',
+normalize = .false.,
+
+/

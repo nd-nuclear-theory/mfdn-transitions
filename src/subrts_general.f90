@@ -13,7 +13,7 @@ real function myphase(i)
   !         myphase = -1
   !      endif
   !
-  myphase = 1.0 - 2.0 * IAND(i,1)
+  myphase = 1.0 - 2.0*IAND(i, 1)
   !
   return
 end function myphase
@@ -29,10 +29,10 @@ logical function pairwiseless(a, b, c, d)
   return
 #else
   if ((a .lt. c) .or. ((a .eq. c) .and. (b .le. d))) then
-     pairwiseless = .true.
+    pairwiseless = .true.
   else
-     pairwiseless = .false.
-  endif
+    pairwiseless = .false.
+  end if
 #endif
   !
   return
@@ -49,13 +49,13 @@ integer(kind=4) function intfour(neight, ierror)
   !     aborts MPI and stops if neight > 2^31
   !
   intfour = neight
-  if (intfour.ne.neight) then
-     write(0,*) ' Fatal error in program MFDn'
-     write(0,*) ' integer*8 too big in function intfour', neight
-     write(0,*) ' Error code', ierror
-     call cancelall(ierror)
-     stop
-  endif
+  if (intfour .ne. neight) then
+    write (0, *) ' Fatal error in program MFDn'
+    write (0, *) ' integer*8 too big in function intfour', neight
+    write (0, *) ' Error code', ierror
+    call cancelall(ierror)
+    stop
+  end if
   !
   return
 end function intfour
@@ -70,11 +70,11 @@ subroutine cancelall(ierror)
   !
   !     writes error (ideally unique) code and cancels all processes
   !
-  print*, ' Fatal error in program MFDn Transitions'
-  print*, ' MFDn Transitions error code ', ierror
-  print*, ' MPI rank', myrank
-  !     
-  print*, ' Aborting MPI'
+  print *, ' Fatal error in program MFDn Transitions'
+  print *, ' MFDn Transitions error code ', ierror
+  print *, ' MPI rank', myrank
+  !
+  print *, ' Aborting MPI'
   call MPI_Abort(MPI_COMM_WORLD, ierror, ierr)
   !
   stop

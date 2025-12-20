@@ -24,26 +24,26 @@ subroutine read_TBME_multi(nTBME, TBME_opfile)
   logical :: binary
   !
   do iTB = 1, nTBME
-     TBMEfile = TBME_opfile(iTB)
-     inquire(file=TRIM(TBMEfile)//'.bin', exist=binary)
-     !
-     if (binary) then
-        !     actual binary read statements
-        call readTBMEbin(TBMEfile)
-     else
-        !     actual ascii read statements
-        call readTBMEascii(TBMEfile)
-     endif
-     if (iTB .eq. 1) then
-        if (nTBMEs_pp.gt.0) allocate(TBMEarray_pp(nTBME, nTBMEs_pp))
-        if (nTBMEs_pn.gt.0) allocate(TBMEarray_pn(nTBME, nTBMEs_pn))
-        if (nTBMEs_nn.gt.0) allocate(TBMEarray_nn(nTBME, nTBMEs_nn))
-     endif
-     !
-     if (nTBMEs_pp.gt.0) TBMEarray_pp(iTB, 1:nTBMEs_pp) = TBME_pp(1:nTBMEs_pp)
-     if (nTBMEs_pn.gt.0) TBMEarray_pn(iTB, 1:nTBMEs_pn) = TBME_pn(1:nTBMEs_pn)
-     if (nTBMEs_nn.gt.0) TBMEarray_nn(iTB, 1:nTBMEs_nn) = TBME_nn(1:nTBMEs_nn)
-  enddo
+    TBMEfile = TBME_opfile(iTB)
+    inquire (file=TRIM(TBMEfile)//'.bin', exist=binary)
+    !
+    if (binary) then
+      !     actual binary read statements
+      call readTBMEbin(TBMEfile)
+    else
+      !     actual ascii read statements
+      call readTBMEascii(TBMEfile)
+    end if
+    if (iTB .eq. 1) then
+      if (nTBMEs_pp .gt. 0) allocate (TBMEarray_pp(nTBME, nTBMEs_pp))
+      if (nTBMEs_pn .gt. 0) allocate (TBMEarray_pn(nTBME, nTBMEs_pn))
+      if (nTBMEs_nn .gt. 0) allocate (TBMEarray_nn(nTBME, nTBMEs_nn))
+    end if
+    !
+    if (nTBMEs_pp .gt. 0) TBMEarray_pp(iTB, 1:nTBMEs_pp) = TBME_pp(1:nTBMEs_pp)
+    if (nTBMEs_pn .gt. 0) TBMEarray_pn(iTB, 1:nTBMEs_pn) = TBME_pn(1:nTBMEs_pn)
+    if (nTBMEs_nn .gt. 0) TBMEarray_nn(iTB, 1:nTBMEs_nn) = TBME_nn(1:nTBMEs_nn)
+  end do
   !
   return
 end subroutine read_TBME_multi

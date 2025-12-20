@@ -1,0 +1,10 @@
+# target many-body truncation: A=6, p-shell, Nmax02
+
+set-target-indexing orbitals-ob-03.dat 3 3 4 4 4
+set-target-multipolarity 0 0 0
+set-output-format 15099
+set-mass 6
+
+define-tb-source builtin identity
+define-target identity_h2v15099.dat
+  add-source identity 1.0
