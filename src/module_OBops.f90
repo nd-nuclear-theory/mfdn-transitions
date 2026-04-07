@@ -33,6 +33,7 @@ contains
     !$omp                  xR20op, xM1Lop, xM1Sop, xE2Qop)       &
     !$omp          reduction(+: totR20, totM1L, totM1S, totE2Q)
     !
+    ! calculate radius
     if (Par .eq. 1) then
       !$omp do
       do i = obdmeOrb_offset(0) + 1, obdmeOrb_offset(1)
@@ -52,6 +53,7 @@ contains
       !$omp end do nowait
     end if
     !
+    ! calculate M1 or E1
     if (mxK .ge. 1) then
       !$omp do
       do i = obdmeOrb_offset(1) + 1, obdmeOrb_offset(2)
@@ -77,6 +79,7 @@ contains
       !$omp end do nowait
     end if
     !
+    ! calculate E2 or M2
     if (mxK .ge. 2) then
       !$omp do
       do i = obdmeOrb_offset(2) + 1, obdmeOrb_offset(3)
@@ -131,6 +134,7 @@ contains
     !$omp          private(ia, na, la, j2a, ic, nc, lc, j2c, i,  xF0op, xGTop) &
     !$omp          reduction(+: totF0, totGT)
     !
+    ! calculate Fermi matrix elements
     !$omp do
     do i = obdmeOrb_offset(0) + 1, obdmeOrb_offset(1)
       ia = obdmeOrbKbraket(1, i)
@@ -148,24 +152,26 @@ contains
     end do
     !$omp end do nowait
     !
-    !$omp do
-    do i = obdmeOrb_offset(1) + 1, obdmeOrb_offset(2)
-      ia = obdmeOrbKbraket(1, i)
-      na = n_orb(ia)
-      la = l_orb(ia)
-      j2a = j2_orb(ia)
-      !
-      ic = obdmeOrbKbraket(2, i)
-      nc = n_orb(ic)
-      lc = l_orb(ic)
-      j2c = j2_orb(ic)
-      !
-      xGTop = GToperator(na, la, j2a, nc, lc, j2c)
-      totGT = totGT + robdme(i)*xGTop
-      !
-    end do
-    !$omp end do
-    !
+    ! calculate Gamow-Teller matrix elements
+    if (mxK .ge. 1) then
+      !$omp do
+      do i = obdmeOrb_offset(1) + 1, obdmeOrb_offset(2)
+        ia = obdmeOrbKbraket(1, i)
+        na = n_orb(ia)
+        la = l_orb(ia)
+        j2a = j2_orb(ia)
+        !
+        ic = obdmeOrbKbraket(2, i)
+        nc = n_orb(ic)
+        lc = l_orb(ic)
+        j2c = j2_orb(ic)
+        !
+        xGTop = GToperator(na, la, j2a, nc, lc, j2c)
+        totGT = totGT + robdme(i)*xGTop
+        !
+      end do
+      !$omp end do
+    end if
     !$omp end parallel
     !
     return
